@@ -1,39 +1,53 @@
-let get_element_li  = (name, weight,img) => {
-    //return `<li class="added-pokemon">name: ${name}  weight: <span class="weight">${weight} <img src="${img}"></img></span> <button class="remove-pokemon">remove</button></li>`
-    return `<div class="card">
-    <img src=${img} alt="Avatar">
+//Format the cards with the data
+let get_element_li  = (name, id, weight, height, exp, types, img) => {
+    return `
+    <div class="column">
+    <div class="card">
+    <img src=${img} width="100px" height="100px">
       <div class="container_card">
         <h4><b>${name}</b></h4>
-        <p>${weight}</p>
+        <h3>id: #${id}</h3> 
+        <p>weight: ${weight} height: ${height}</p>
+        <p>base experience: ${exp}</p>
+        <p>Types: ${types}</p>
       </div>
       <button class="remove-pokemon">remove</button>
-    </div>`
+    </div>
+    </div>
+    `
 }
 
-let pokemons = {}
 
-let add_item_to_list_with_template = (name, weight, img) => {
+let pokemons = {} //Dictionary of pokemons
+
+//Extract key of the dictionary from the node
+let extractNameFromNode = (node) => {
+  return node.childNodes[1].childNodes[3].childNodes[1].textContent;
+}
+
+//add data to front
+let add_item_to_list_with_template = (name, id, weight, height, exp, types, img) => {
 
     console.log("pokemon: "+name+" weight: "+weight+" img: "+img);
-    let element = get_element_li(name, weight, img);
+    let element = get_element_li(name, id, weight, height, exp, types, img);
     document.getElementById("list-items").innerHTML += element;
     
     //Adding listeners to buttons
     let removeButtons = document.getElementsByClassName("remove-pokemon");
     for(let i=0; i<removeButtons.length;i++){
         removeButtons[i].addEventListener("click", (event)=>
-            remove_element_event(event.target.parentNode)
+            remove_element_event(event.target.parentNode.parentNode)
         );
     }
 
 }
 
+//Remove card
 let remove_element_event = (node_to_remove) => {
-  //console.log("inside remove list")
+  //console.log("inside remove list "+ name)
+  //Erase from dictionary
+  delete pokemons[extractNameFromNode(node_to_remove)]; 
   let list = document.getElementById("list-items")
-  //console.log(node_to_remove.children[0].textContent)
-  //totalWeight -= parseFloat(node_to_remove.children[0].textContent);
-  //document.getElementById("total").innerHTML = "Total: "+totalWeight;
   list.removeChild(node_to_remove);
 }
 
@@ -41,21 +55,24 @@ let remove_element_event = (node_to_remove) => {
 let thenable_handle_for_the_result_of_the_pokemon_request = (result) => {
     //save pokemon in the dictionary
     pokemons[result.name]=result.data;
+    /*
     console.log(result.id)
     console.log(result.name);
-    console.log(result.weight)
+    console.log(result.weight)*/
+
+    //Save types of the pokemon
     let typesNames = []
-    
     result.types.forEach((typeData)=>{
       typesNames.push(typeData.type.name);
     })
+    //Extract image
     let pokeID= result.id;
     let img = `https://pokeres.bastionbot.org/images/pokemon/${pokeID}.png`
 
-    console.log(typesNames)
-    console.log(result.height)
-    console.log(result.base_experience)
-    add_item_to_list_with_template(result.name, result.weight, img);
+    // console.log(typesNames)
+    // console.log(result.height)
+    // console.log(result.base_experience)
+    add_item_to_list_with_template(result.name, result.id, result.weight, result.height, result.base_experience, typesNames, img);
 }
 
 document.addEventListener("DOMContentLoaded", function(_){  
@@ -78,4 +95,5 @@ document.addEventListener("DOMContentLoaded", function(_){
   let boton = document.getElementById("search"); 
   boton.addEventListener("click", event_handler);
 }); 
+
 
